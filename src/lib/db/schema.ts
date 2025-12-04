@@ -87,3 +87,35 @@ export const foodReviews = pgTable("food_reviews", {
 
 export type FoodReview = InferSelectModel<typeof foodReviews>;
 export type NewFoodReview = InferInsertModel<typeof foodReviews>;
+
+// ============================================
+// POKEMON (Saved Pokemon for reviews)
+// ============================================
+export const pokemon = pgTable("pokemon", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  pokemonId: text("pokemon_id").notNull(), // PokeAPI ID (e.g., "25" for Pikachu)
+  name: text("name").notNull(),
+  imageUrl: text("image_url").notNull(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type Pokemon = InferSelectModel<typeof pokemon>;
+export type NewPokemon = InferInsertModel<typeof pokemon>;
+
+// ============================================
+// POKEMON REVIEWS
+// ============================================
+export const pokemonReviews = pgTable("pokemon_reviews", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  pokemonId: uuid("pokemon_id").notNull().references(() => pokemon.id, { onDelete: "cascade" }),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  rating: text("rating").notNull(), // 1-5 stars stored as text
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type PokemonReview = InferSelectModel<typeof pokemonReviews>;
+export type NewPokemonReview = InferInsertModel<typeof pokemonReviews>;
