@@ -3,11 +3,13 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { searchPokemon, savePokemon, type PokeAPIPokemon } from "@/lib/actions/pokemon";
+import { type PokemonSuggestion } from "@/lib/actions/ai";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Plus, Loader2 } from "lucide-react";
+import { Search, Plus, Loader2, ArrowLeft } from "lucide-react";
 import Image from "next/image";
+import { AISuggestions } from "./ai-suggestions";
 
 export function PokemonSearch() {
   const router = useRouter();
@@ -16,6 +18,10 @@ export function PokemonSearch() {
   const [error, setError] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  
+  // AI suggestions state - lifted up to persist across view changes
+  const [suggestions, setSuggestions] = useState<PokemonSuggestion[]>([]);
 
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -27,6 +33,26 @@ export function PokemonSearch() {
       const response = await searchPokemon(query);
       if (response.success && response.data) {
         setResult(response.data);
+        setShowSuggestions(false);
+      } else {
+        setError(response.error || "Pokemon not found");
+      }
+    } finally {
+      setIsSearching(false);
+    }
+  }
+
+  async function handleSuggestionClick(name: string) {
+    setQuery(name);
+    setError(null);
+    setResult(null);
+    setIsSearching(true);
+
+    try {
+      const response = await searchPokemon(name);
+      if (response.success && response.data) {
+        setResult(response.data);
+        setShowSuggestions(false);
       } else {
         setError(response.error || "Pokemon not found");
       }
@@ -63,6 +89,12 @@ export function PokemonSearch() {
     });
   }
 
+  function handleBackToSuggestions() {
+    setResult(null);
+    setQuery("");
+    setShowSuggestions(true);
+  }
+
   const imageUrl = result
     ? result.sprites.other?.["official-artwork"]?.front_default ||
       result.sprites.front_default
@@ -94,11 +126,33 @@ export function PokemonSearch() {
         </Button>
       </form>
 
+      {/* AI Suggestions */}
+      {showSuggestions && !result && (
+        <AISuggestions
+          suggestions={suggestions}
+          onSuggestionsChange={setSuggestions}
+          onSuggestionClick={handleSuggestionClick}
+          isSearching={isSearching}
+        />
+      )}
+
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {result && (
         <Card>
           <CardContent className="p-4">
+            {/* Back to suggestions button */}
+            {suggestions.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBackToSuggestions}
+                className="mb-3 -ml-2 h-7 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="mr-1 h-3 w-3" />
+                Back to suggestions
+              </Button>
+            )}
             <div className="flex items-center gap-4">
               {imageUrl && (
                 <div className="relative h-24 w-24 shrink-0 rounded-lg bg-muted/30">
