@@ -9,6 +9,21 @@ export interface PokemonSuggestion {
   reason: string;
 }
 
+// Generate a random seed to encourage variety
+function getRandomSeed(): string {
+  const themes = [
+    "underrated gems", "fan favorites", "competitive battlers", "unique designs",
+    "interesting lore", "cute Pokemon", "intimidating Pokemon", "starters",
+    "legendaries", "mythicals", "fossil Pokemon", "baby Pokemon", "eeveelutions",
+    "dragon types", "ghost types", "fairy types", "steel types", "psychic types",
+    "regional variants", "mega evolutions", "gigantamax forms", "paradox Pokemon",
+    "gen 1 classics", "gen 2 favorites", "gen 3 gems", "gen 4 legends", "gen 5 unique",
+    "gen 6 designs", "gen 7 Alolan", "gen 8 Galarian", "gen 9 Paldean"
+  ];
+  const randomThemes = themes.sort(() => Math.random() - 0.5).slice(0, 3);
+  return randomThemes.join(", ");
+}
+
 export async function getPokemonSuggestions(
   context?: string
 ): Promise<{ success: boolean; suggestions: PokemonSuggestion[]; error?: string }> {
@@ -21,17 +36,46 @@ export async function getPokemonSuggestions(
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      generationConfig: {
+        temperature: 1.2,
+      },
+    });
+
+    const randomSeed = getRandomSeed();
+    const timestamp = Date.now();
 
     const prompt = context
-      ? `You are a Pokemon expert. Based on the user's interest: "${context}", suggest 5 Pokemon names they might want to search for. 
+      ? `You are a Pokemon expert with deep knowledge of all ${timestamp % 1000} Pokemon species. Based on the user's interest: "${context}", suggest 6 UNIQUE and DIVERSE Pokemon names they might want to search for.
+         
+         IMPORTANT RULES:
+         - DO NOT suggest common/overused Pokemon like Pikachu, Charizard, Eevee, Mewtwo unless directly relevant
+         - Include at least 2 lesser-known or underappreciated Pokemon
+         - Mix different generations (Gen 1-9)
+         - Mix different types and roles
+         - Be creative and surprising with your choices
+         - Focus on: ${randomSeed}
+         
          Return ONLY a valid JSON array with objects containing "name" (the exact Pokemon name, lowercase) and "reason" (a brief 10-15 word explanation of why this Pokemon matches their interest).
-         Example format: [{"name": "pikachu", "reason": "Electric type mascot, beloved for its cute appearance and powerful thunderbolt"}]
+         Example format: [{"name": "dragapult", "reason": "Ghost/Dragon type with unique design, launches baby Dreepy as missiles"}]
          Only include real Pokemon from the official games. Return nothing but the JSON array.`
-      : `You are a Pokemon expert. Suggest 5 random interesting Pokemon for someone to discover and review.
+      : `You are a Pokemon expert. Suggest 6 UNIQUE and SURPRISING Pokemon for someone to discover and review.
+         
+         Random seed for variety: ${timestamp}
+         Focus on these themes: ${randomSeed}
+         
+         IMPORTANT RULES:
+         - AVOID overused suggestions like Pikachu, Charizard, Gengar, Eevee, Mewtwo, Lucario, Greninja
+         - Include at least 3 lesser-known or underappreciated Pokemon
+         - Mix different generations (Gen 1-9) - include at least one from Gen 5-9
+         - Mix different types (try to include at least 4 different types)
+         - Be creative and introduce users to Pokemon they might not know
+         - Each suggestion should feel fresh and interesting
+         
          Return ONLY a valid JSON array with objects containing "name" (the exact Pokemon name, lowercase) and "reason" (a brief 10-15 word explanation of what makes this Pokemon interesting).
-         Example format: [{"name": "gengar", "reason": "Ghost/Poison type with mischievous personality and powerful shadow abilities"}]
-         Include a mix of popular and lesser-known Pokemon from different generations. Return nothing but the JSON array.`;
+         Example format: [{"name": "falinks", "reason": "Unique Fighting-type that's actually six tiny soldiers marching together"}]
+         Return nothing but the JSON array.`;
 
     const result = await model.generateContent(prompt);
     const response = result.response;
@@ -51,7 +95,7 @@ export async function getPokemonSuggestions(
 
     return {
       success: true,
-      suggestions: suggestions.slice(0, 5), // Ensure max 5 suggestions
+      suggestions: suggestions.slice(0, 6),
     };
   } catch (error) {
     console.error("AI suggestion error:", error);
