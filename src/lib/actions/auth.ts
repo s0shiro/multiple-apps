@@ -141,3 +141,10 @@ export async function deleteAccount(): Promise<{ success: true } | { success: fa
   revalidatePath("/", "layout");
   redirect("/");
 }
+
+// Helper to get authenticated user
+export async function getAuthenticatedUser() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  return user;
+}
