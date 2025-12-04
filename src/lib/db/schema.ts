@@ -3,6 +3,7 @@ import {
   uuid,
   text,
   timestamp,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { InferSelectModel, InferInsertModel } from "drizzle-orm";
 
@@ -19,3 +20,18 @@ export const users = pgTable("users", {
 
 export type User = InferSelectModel<typeof users>;
 export type NewUser = InferInsertModel<typeof users>;
+
+// ============================================
+// TODOS
+// ============================================
+export const todos = pgTable("todos", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  completed: boolean("completed").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type Todo = InferSelectModel<typeof todos>;
+export type NewTodo = InferInsertModel<typeof todos>;
