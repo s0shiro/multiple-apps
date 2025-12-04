@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
 import { deleteNote, updateNote } from "@/lib/actions/notes";
 import { Input } from "@/components/ui/input";
 import {
@@ -32,6 +33,7 @@ export function NoteItem({ note }: NoteItemProps) {
   const [editContent, setEditContent] = useState(note.content);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { resolvedTheme } = useTheme();
 
   async function handleDelete() {
     setError(null);
@@ -185,7 +187,7 @@ export function NoteItem({ note }: NoteItemProps) {
         <AccordionContent className="px-4 pb-4 pt-0">
           <div className="border-t border-border pt-4">
             {isEditing ? (
-              <div data-color-mode="light" className="overflow-hidden rounded-md border border-border">
+              <div data-color-mode={resolvedTheme} className="overflow-hidden rounded-md border border-border">
                 <MDEditor
                   value={editContent}
                   onChange={(value) => setEditContent(value || "")}
@@ -207,8 +209,8 @@ export function NoteItem({ note }: NoteItemProps) {
                 </TabsList>
                 <TabsContent value="preview">
                   <div
-                    data-color-mode="light"
-                    className="prose prose-sm max-w-none rounded-md bg-muted/30 p-4"
+                    data-color-mode={resolvedTheme}
+                    className="prose prose-sm max-w-none rounded-md bg-muted/30 p-4 dark:prose-invert"
                   >
                     <MDPreview source={note.content} />
                   </div>
