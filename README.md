@@ -1,36 +1,124 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Multiple Apps
+
+A **multi-activity learning app** built with Next.js 16, React 19, TypeScript, Tailwind CSS v4, and Supabase for authentication and data persistence. Contains 5 independent activities sharing a common auth layer.
+
+## Tech Stack
+
+- **Next.js 16.0.6** - App Router with Server Components
+- **React 19.2.0** - Latest React
+- **Tailwind CSS v4** - Modern CSS framework
+- **TypeScript 5** - Strict mode enabled
+- **Supabase** - Auth, PostgreSQL database, and file storage
+- **Drizzle ORM** - Type-safe database queries and migrations
+- **Zod** - Schema validation and type inference
+- **shadcn/ui** - UI component library (Radix primitives + Tailwind)
+- **Lucide React** - Icon library
+
+## Activities
+
+| Route | Activity | Description |
+|-------|----------|-------------|
+| `/todo` | To-Do List | CRUD todos per user |
+| `/drive` | Google Drive Lite | CRUD photos with search/sort |
+| `/food` | Food Review | CRUD photos + nested reviews |
+| `/pokemon` | Pokemon Review | Search Pokemon API + CRUD reviews |
+| `/notes` | Markdown Notes | CRUD notes with raw/preview modes |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm or yarn
+- Supabase account and project
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+DATABASE_URL=your_database_connection_string
+```
+
+### Installation
 
 ```bash
+# Install dependencies
+npm install
+
+# Run database migrations
+npm run db:migrate
+
+# Start the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev          # Start development server
+npm run build        # Production build
+npm run start        # Start production server
+npm run lint         # Run ESLint
+npm run db:generate  # Generate Drizzle migrations
+npm run db:migrate   # Run database migrations
+npm run db:push      # Push schema changes to database
+npm run db:studio    # Open Drizzle Studio
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/
+│   ├── layout.tsx              # Root layout with auth provider
+│   ├── page.tsx                # Index (login or activity list)
+│   └── (activities)/           # Route group for shared activity layout
+│       ├── layout.tsx          # Shared layout with header navigation
+│       ├── todo/               # To-Do List activity
+│       ├── drive/              # Google Drive Lite activity
+│       ├── food/               # Food Review activity
+│       ├── pokemon/            # Pokemon Review activity
+│       └── notes/              # Markdown Notes activity
+├── components/
+│   ├── auth/                   # Authentication components
+│   ├── layout/                 # Header, navigation components
+│   ├── shared/                 # Reusable components across activities
+│   ├── ui/                     # shadcn/ui components
+│   └── [activity]/             # Activity-specific components
+└── lib/
+    ├── actions/                # Server Actions
+    ├── db/                     # Drizzle ORM setup and schema
+    └── supabase/               # Supabase client configuration
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Database Schema
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The app uses the following data models with Drizzle ORM:
 
-## Deploy on Vercel
+- **Users** - User accounts (synced with Supabase Auth)
+- **Todos** - To-do items per user
+- **Photos** - Photo uploads for Drive activity
+- **Food Photos** - Food photo uploads with reviews
+- **Food Reviews** - Reviews for food photos
+- **Pokemon** - Saved Pokemon from PokeAPI
+- **Pokemon Reviews** - Reviews for saved Pokemon
+- **Notes** - Markdown notes per user
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+All tables include `user_id` for data ownership and RLS.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Authentication
+
+The app uses Supabase Auth with email/password authentication:
+
+- **Login** - Email and password authentication
+- **Logout** - Clear session and redirect to login
+- **Delete Account** - Remove user and all associated data
+
+## License
+
+MIT
