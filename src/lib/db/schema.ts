@@ -119,3 +119,18 @@ export const pokemonReviews = pgTable("pokemon_reviews", {
 
 export type PokemonReview = InferSelectModel<typeof pokemonReviews>;
 export type NewPokemonReview = InferInsertModel<typeof pokemonReviews>;
+
+// ============================================
+// NOTES (Markdown Notes)
+// ============================================
+export const notes = pgTable("notes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  content: text("content").notNull().default(""),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type Note = InferSelectModel<typeof notes>;
+export type NewNote = InferInsertModel<typeof notes>;
