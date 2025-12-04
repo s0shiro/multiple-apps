@@ -13,6 +13,7 @@ A **multi-activity learning app** built with Next.js 16, React 19, TypeScript, T
 - **Zod** - Schema validation and type inference
 - **shadcn/ui** - UI component library (Radix primitives + Tailwind)
 - **Lucide React** - Icon library
+- **Google Generative AI** - Gemini 2.0 Flash for AI-powered suggestions
 
 ## Activities
 
@@ -21,7 +22,7 @@ A **multi-activity learning app** built with Next.js 16, React 19, TypeScript, T
 | `/todo` | To-Do List | CRUD todos per user |
 | `/drive` | Google Drive Lite | CRUD photos with search/sort |
 | `/food` | Food Review | CRUD photos + nested reviews |
-| `/pokemon` | Pokemon Review | Search Pokemon API + CRUD reviews |
+| `/pokemon` | Pokemon Review | Search Pokemon API + AI suggestions + CRUD reviews |
 | `/notes` | Markdown Notes | CRUD notes with raw/preview modes |
 
 ## Getting Started
@@ -40,6 +41,7 @@ Create a `.env.local` file in the root directory:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 DATABASE_URL=your_database_connection_string
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 ### Installation
@@ -118,6 +120,17 @@ The app uses Supabase Auth with email/password authentication:
 - **Login** - Email and password authentication
 - **Logout** - Clear session and redirect to login
 - **Delete Account** - Remove user and all associated data
+
+## AI Features
+
+The app integrates Google's Gemini 2.0 Flash model for intelligent suggestions:
+
+### Pokemon Suggestions
+- **Context-aware suggestions** - Get Pokemon recommendations based on user interests (e.g., "fire types", "cute Pokemon")
+- **Random discovery** - Receive curated suggestions of interesting Pokemon to explore
+- **Smart reasoning** - Each suggestion includes a brief explanation of why the Pokemon matches the query
+
+The AI feature is optional and gracefully degrades if `GEMINI_API_KEY` is not configured.
 
 ## License
 
