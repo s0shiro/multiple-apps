@@ -5,7 +5,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { users, photos, foodPhotos } from "@/lib/db/schema";
+import { getPhotosBucketName } from "@/lib/supabase/storage";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 
@@ -19,6 +20,10 @@ const signupSchema = z.object({
   name: z.string().min(1, "Display name is required"),
   email: z.email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(1, "Please confirm your password"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -65,6 +70,7 @@ export async function signup(formData: FormData): Promise<AuthResult<SignupInput
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
+    confirmPassword: formData.get("confirmPassword"),
   };
 
   const result = signupSchema.safeParse(rawData);
@@ -121,11 +127,41 @@ export async function deleteAccount(): Promise<{ success: true } | { success: fa
   }
 
   try {
-    // Delete user from our database first
+    const adminClient = createAdminClient();
+    const bucketName = getPhotosBucketName();
+
+    // Get all user's photos from Drive
+    const userPhotos = await db.select({ storagePath: photos.storagePath })
+      .from(photos)
+      .where(eq(photos.userId, user.id));
+
+    // Get all user's food photos
+    const userFoodPhotos = await db.select({ storagePath: foodPhotos.storagePath })
+      .from(foodPhotos)
+      .where(eq(foodPhotos.userId, user.id));
+
+    // Collect all storage paths
+    const allStoragePaths = [
+      ...userPhotos.map(p => p.storagePath),
+      ...userFoodPhotos.map(p => p.storagePath),
+    ].filter(Boolean);
+
+    // Delete files from storage
+    if (allStoragePaths.length > 0) {
+      const { error: storageError } = await adminClient.storage
+        .from(bucketName)
+        .remove(allStoragePaths);
+
+      if (storageError) {
+        console.error("Error deleting storage files:", storageError);
+        // Continue with account deletion even if storage cleanup fails
+      }
+    }
+
+    // Delete user from our database (cascades to all related records)
     await db.delete(users).where(eq(users.id, user.id));
 
     // Delete user from Supabase Auth using admin client
-    const adminClient = createAdminClient();
     const { error } = await adminClient.auth.admin.deleteUser(user.id);
 
     if (error) {

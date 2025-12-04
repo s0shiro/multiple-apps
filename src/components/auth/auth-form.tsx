@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Eye, EyeOff } from "lucide-react";
 import { login, signup, type LoginInput, type SignupInput, type FieldErrors } from "@/lib/actions/auth";
 
 
@@ -20,6 +21,9 @@ export function AuthForm() {
   const [signupErrors, setSignupErrors] = useState<FieldErrors<SignupInput>>({});
   const [generalError, setGeneralError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   function handleLogin(formData: FormData) {
     setLoginErrors({});
@@ -85,13 +89,23 @@ export function AuthForm() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="login-password">Password</Label>
-                <Input
-                  id="login-password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  disabled={isPending}
-                />
+                <div className="relative">
+                  <Input
+                    id="login-password"
+                    name="password"
+                    type={showLoginPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    disabled={isPending}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowLoginPassword(!showLoginPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showLoginPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
                 {loginErrors.password && (
                   <p className="text-sm text-destructive">{loginErrors.password}</p>
                 )}
@@ -135,15 +149,48 @@ export function AuthForm() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="register-password">Password</Label>
-                <Input
-                  id="register-password"
-                  name="password"
-                  type="password"
-                  placeholder="••••••••"
-                  disabled={isPending}
-                />
+                <div className="relative">
+                  <Input
+                    id="register-password"
+                    name="password"
+                    type={showSignupPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    disabled={isPending}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignupPassword(!showSignupPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showSignupPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
                 {signupErrors.password && (
                   <p className="text-sm text-destructive">{signupErrors.password}</p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="register-confirm-password">Confirm Password</Label>
+                <div className="relative">
+                  <Input
+                    id="register-confirm-password"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    disabled={isPending}
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {signupErrors.confirmPassword && (
+                  <p className="text-sm text-destructive">{signupErrors.confirmPassword}</p>
                 )}
               </div>
               {generalError && (
