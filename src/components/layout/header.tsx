@@ -2,15 +2,40 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LogoutButton } from "@/components/auth/logout-button";
+import { useEffect, useState } from "react";
+import { logout, deleteAccount, getAuthenticatedUser } from "@/lib/actions/auth";
 import {
   CheckSquare,
   HardDrive,
   UtensilsCrossed,
   Gamepad2,
   FileText,
+  LogOut,
+  Trash2,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const activities = [
   { href: "/todo", label: "To-Do", icon: CheckSquare },
@@ -22,6 +47,31 @@ const activities = [
 
 export function Header() {
   const pathname = usePathname();
+  const [userInitial, setUserInitial] = useState<string>("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme } = useTheme();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    getAuthenticatedUser().then((user) => {
+      if (user?.email) {
+        setUserInitial(user.email.charAt(0).toUpperCase());
+      }
+    });
+  }, []);
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    await deleteAccount();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -59,7 +109,67 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <LogoutButton />
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="rounded-md p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+            aria-label="Toggle theme"
+          >
+            {mounted && (
+              theme === "dark" ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )
+            )}
+          </button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="focus:outline-none">
+                <Avatar className="h-8 w-8 cursor-pointer transition-opacity hover:opacity-80">
+                  <AvatarFallback className="bg-emerald-600 text-white text-sm font-medium">
+                    {userInitial || "?"}
+                  </AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <DropdownMenuItem 
+                    onSelect={(e) => e.preventDefault()}
+                    className="cursor-pointer text-destructive focus:text-destructive"
+                    disabled={isDeleting}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>{isDeleting ? "Deleting..." : "Delete Account"}</span>
+                  </DropdownMenuItem>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your
+                      account and remove all of your data from our servers.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {isDeleting ? "Deleting..." : "Delete Account"}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
