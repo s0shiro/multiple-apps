@@ -1,23 +1,23 @@
 import { ImageFilters } from "@/components/shared";
 
-interface PhotoFiltersProps {
+interface FoodFiltersProps {
   defaultSearch?: string;
   defaultSortBy?: string;
   defaultSortOrder?: string;
 }
 
-export function PhotoFilters({
+export function FoodFilters({
   defaultSearch = "",
   defaultSortBy = "createdAt",
   defaultSortOrder = "desc",
-}: PhotoFiltersProps) {
+}: FoodFiltersProps) {
   return (
     <ImageFilters
-      basePath="/drive"
+      basePath="/food"
       defaultSearch={defaultSearch}
       defaultSortBy={defaultSortBy}
       defaultSortOrder={defaultSortOrder}
-      searchPlaceholder="Search photos..."
+      searchPlaceholder="Search food photos..."
     />
   );
 }
