@@ -4,13 +4,10 @@
 import { createTestUser, cleanUpDatabase, getSupabaseClient, closeDbConnection } from "../../setup/dbHelper";
 
 describe("Authentication Integration", () => {
-  afterEach(async () => {
-    await cleanUpDatabase();
-  });
-
   afterAll(async () => {
+    await cleanUpDatabase();
     await closeDbConnection();
-  });
+  }, 15000);
 
   describe("signInWithPassword", () => {
     it("should return user object with required properties on valid credentials", async () => {

@@ -10,6 +10,8 @@ const createJestConfig = nextJest({
 const config: Config = {
   coverageProvider: "v8",
   testEnvironment: "jsdom",
+  // Run tests sequentially to avoid DB conflicts between integration tests
+  maxWorkers: 1,
   // Load env vars before tests
   setupFiles: ["<rootDir>/jest.env.setup.ts"],
   // Add more setup options before each test is run

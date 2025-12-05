@@ -7,7 +7,7 @@ describe("Test Setup", () => {
   afterAll(async () => {
     await cleanUpDatabase();
     await closeDbConnection();
-  });
+  }, 15000);
 
   it("should connect to the test database and create a user", async () => {
     const { user, token } = await createTestUser();
