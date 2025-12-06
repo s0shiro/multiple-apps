@@ -92,6 +92,11 @@ export async function signup(formData: FormData): Promise<AuthResult<SignupInput
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        display_name: name
+      }
+    }
   });
 
   if (error) {
@@ -182,5 +187,7 @@ export async function deleteAccount(): Promise<{ success: true } | { success: fa
 export async function getAuthenticatedUser() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+
+  console.log(user)
   return user;
 }
