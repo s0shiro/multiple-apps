@@ -4,12 +4,10 @@ import { LogoutButton } from "@/components/auth/logout-button";
 import { DeleteAccountButton } from "@/components/auth/delete-account-button";
 import { WelcomeSection } from "@/components/home/welcome-section";
 import { ActivityLink } from "@/components/home/activity-link";
+import { getAuthenticatedUser } from "@/lib/actions/auth";
 
 export default async function Home() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser()
 
   if (!user) {
     return (
@@ -22,7 +20,7 @@ export default async function Home() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <main className="flex flex-col items-center gap-8 p-8">
-        <WelcomeSection email={user.email || ""} />
+        <WelcomeSection email={user.email || ""} displayName={user.user_metadata?.display_name || ""} />
 
         <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500 fill-mode-backwards">
           <h2 className="text-xl font-semibold text-center">Activities</h2>
