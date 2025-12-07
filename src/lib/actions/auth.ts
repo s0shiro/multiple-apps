@@ -187,7 +187,5 @@ export async function deleteAccount(): Promise<{ success: true } | { success: fa
 export async function getAuthenticatedUser() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
-  console.log(user)
   return user;
 }
