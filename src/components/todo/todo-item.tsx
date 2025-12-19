@@ -6,6 +6,12 @@ import { type Priority, PRIORITY_LEVELS } from "@/lib/types/todo";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import { Trash2, Pencil, Check, X } from "lucide-react";
 import type { Todo } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
@@ -78,6 +84,16 @@ export function TodoItem({ todo }: TodoItemProps) {
     setError(null);
   }
 
+  async function handlePriorityChange(newPriority: Priority) {
+    setError(null);
+    setIsLoading(true);
+    const result = await updateTodo(todo.id, { priority: newPriority });
+    setIsLoading(false);
+    if (!result.success) {
+      setError(result.error);
+    }
+  }
+
   return (
     <div className="group">
       <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:bg-accent/50">
@@ -134,15 +150,32 @@ export function TodoItem({ todo }: TodoItemProps) {
               {todo.title}
             </span>
 
-            <span
-              className={cn(
-                "rounded px-2 py-0.5 text-xs font-medium",
-                getPriorityConfig(todo.priority).bgColor,
-                getPriorityConfig(todo.priority).textColor
-              )}
+            <Select
+              value={todo.priority || "MEDIUM"}
+              onValueChange={(value) => handlePriorityChange(value as Priority)}
+              disabled={isLoading || todo.completed}
             >
-              {getPriorityConfig(todo.priority).label}
-            </span>
+              <SelectTrigger className="h-7 w-[90px] border-none bg-transparent p-0 px-2 focus:ring-0">
+                <span
+                  className={cn(
+                    "rounded px-2 py-0.5 text-xs font-medium",
+                    getPriorityConfig(todo.priority).bgColor,
+                    getPriorityConfig(todo.priority).textColor
+                  )}
+                >
+                  {getPriorityConfig(todo.priority).label}
+                </span>
+              </SelectTrigger>
+              <SelectContent>
+                {PRIORITY_LEVELS.map((level) => (
+                  <SelectItem key={level} value={level}>
+                    <span className={priorityConfig[level].textColor}>
+                      {priorityConfig[level].label}
+                    </span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
             <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
               <Button
