@@ -1,22 +1,24 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { todos } from "@/lib/db/schema";
 import { z } from "zod";
 import { eq, and } from "drizzle-orm";
 import { getAuthenticatedUser } from "./auth";
+import { PRIORITY_LEVELS, type Priority } from "@/lib/types/todo";
 
 // Validation schemas
 const createTodoSchema = z.object({
   title: z.string().min(1, "Title is required").max(255, "Title is too long"),
+  priority: z.enum(PRIORITY_LEVELS).default("MEDIUM"),
 });
 
 const updateTodoSchema = z.object({
   id: z.uuid("Invalid todo ID"),
   title: z.string().min(1, "Title is required").max(255, "Title is too long").optional(),
   completed: z.boolean().optional(),
+  priority: z.enum(PRIORITY_LEVELS).optional(),
 });
 
 export type CreateTodoInput = z.infer<typeof createTodoSchema>;
@@ -57,6 +59,7 @@ export async function createTodo(formData: FormData): Promise<TodoActionResult> 
 
   const rawData = {
     title: formData.get("title"),
+    priority: formData.get("priority") || "MEDIUM",
   };
 
   const result = createTodoSchema.safeParse(rawData);
@@ -70,20 +73,22 @@ export async function createTodo(formData: FormData): Promise<TodoActionResult> 
     await db.insert(todos).values({
       userId: user.id,
       title: result.data.title,
+      priority: result.data.priority,
       completed: false,
     });
 
     revalidatePath("/todo");
     return { success: true };
-  } catch {
+  } catch (error) {
+    console.error("Failed to create todo:", error);
     return { success: false, error: "Failed to create todo" };
   }
 }
 
-// Update a todo (title or completed status)
+// Update a todo (title, completed status, or priority)
 export async function updateTodo(
   id: string,
-  data: { title?: string; completed?: boolean }
+  data: { title?: string; completed?: boolean; priority?: Priority }
 ): Promise<TodoActionResult> {
   const user = await getAuthenticatedUser();
 
@@ -115,6 +120,7 @@ export async function updateTodo(
       .set({
         ...(data.title !== undefined && { title: data.title }),
         ...(data.completed !== undefined && { completed: data.completed }),
+        ...(data.priority !== undefined && { priority: data.priority }),
         updatedAt: new Date(),
       })
       .where(and(eq(todos.id, id), eq(todos.userId, user.id)));

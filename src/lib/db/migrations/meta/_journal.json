@@ -8,6 +8,13 @@
       "when": 1764833960307,
       "tag": "0000_milky_wong",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1766121701611,
+      "tag": "0001_new_madame_web",
+      "breakpoints": true
     }
   ]
 }

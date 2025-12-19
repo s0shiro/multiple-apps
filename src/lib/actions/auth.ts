@@ -55,10 +55,22 @@ export async function login(formData: FormData): Promise<AuthResult<LoginInput>>
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(result.data);
+  const { data, error } = await supabase.auth.signInWithPassword(result.data);
 
   if (error) {
     return { success: false, error: error.message };
+  }
+
+  // Ensure user record exists in the database (for users created before this was added)
+  if (data.user) {
+    const existingUser = await db.select().from(users).where(eq(users.id, data.user.id)).limit(1);
+    if (existingUser.length === 0) {
+      await db.insert(users).values({
+        id: data.user.id,
+        email: data.user.email!,
+        name: data.user.user_metadata?.display_name || null,
+      });
+    }
   }
 
   revalidatePath("/", "layout");

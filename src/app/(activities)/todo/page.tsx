@@ -10,6 +10,7 @@ export default async function TodoPage() {
   const completedCount = todos.filter((t) => t.completed).length;
   const totalCount = todos.length;
 
+
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
       <Card>
@@ -27,10 +28,12 @@ export default async function TodoPage() {
               </CardDescription>
             </div>
           </div>
+          
         </CardHeader>
         <CardContent className="flex flex-col gap-6">
           <AddTodoForm />
           <TodoList todos={todos} />
+           {/* <ClientSearch todos={todos}/> */}
         </CardContent>
       </Card>
     </div>

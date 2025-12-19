@@ -29,6 +29,7 @@ export const todos = pgTable("todos", {
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   completed: boolean("completed").default(false).notNull(),
+  priority: text("priority").default("MEDIUM").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
