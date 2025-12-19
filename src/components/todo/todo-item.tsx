@@ -2,12 +2,19 @@
 
 import { useState } from "react";
 import { toggleTodo, deleteTodo, updateTodo } from "@/lib/actions/todos";
+import { type Priority } from "@/lib/types/todo";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Pencil, Check, X } from "lucide-react";
 import type { Todo } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
+
+const priorityConfig: Record<Priority, { label: string; bgColor: string; textColor: string }> = {
+  LOW: { label: "Low", bgColor: "bg-green-500/10", textColor: "text-green-500" },
+  MEDIUM: { label: "Med", bgColor: "bg-yellow-500/10", textColor: "text-yellow-500" },
+  HIGH: { label: "High", bgColor: "bg-red-500/10", textColor: "text-red-500" },
+};
 
 interface TodoItemProps {
   todo: Todo;
@@ -117,6 +124,16 @@ export function TodoItem({ todo }: TodoItemProps) {
               )}
             >
               {todo.title}
+            </span>
+
+            <span
+              className={cn(
+                "rounded px-2 py-0.5 text-xs font-medium",
+                priorityConfig[todo.priority as Priority].bgColor,
+                priorityConfig[todo.priority as Priority].textColor
+              )}
+            >
+              {priorityConfig[todo.priority as Priority].label}
             </span>
 
             <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
