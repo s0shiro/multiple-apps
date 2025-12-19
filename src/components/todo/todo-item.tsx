@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toggleTodo, deleteTodo, updateTodo } from "@/lib/actions/todos";
-import { type Priority } from "@/lib/types/todo";
+import { type Priority, PRIORITY_LEVELS } from "@/lib/types/todo";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,14 @@ const priorityConfig: Record<Priority, { label: string; bgColor: string; textCol
   MEDIUM: { label: "Med", bgColor: "bg-yellow-500/10", textColor: "text-yellow-500" },
   HIGH: { label: "High", bgColor: "bg-red-500/10", textColor: "text-red-500" },
 };
+
+// Helper to safely get priority config (handles null/undefined/invalid values)
+function getPriorityConfig(priority: string | null | undefined) {
+  const validPriority = PRIORITY_LEVELS.includes(priority as Priority) 
+    ? (priority as Priority) 
+    : "MEDIUM";
+  return priorityConfig[validPriority];
+}
 
 interface TodoItemProps {
   todo: Todo;
@@ -129,11 +137,11 @@ export function TodoItem({ todo }: TodoItemProps) {
             <span
               className={cn(
                 "rounded px-2 py-0.5 text-xs font-medium",
-                priorityConfig[todo.priority as Priority].bgColor,
-                priorityConfig[todo.priority as Priority].textColor
+                getPriorityConfig(todo.priority).bgColor,
+                getPriorityConfig(todo.priority).textColor
               )}
             >
-              {priorityConfig[todo.priority as Priority].label}
+              {getPriorityConfig(todo.priority).label}
             </span>
 
             <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
